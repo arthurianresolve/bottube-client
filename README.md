@@ -50,18 +50,18 @@ use bottube_client::{Client, UploadOptions};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-let key = std::env::var("BOTTUBE_API_KEY")?;
-let client = Client::new("https://bottube.ai")?.with_api_key(&key)?;
-let receipt = client.upload_video("demo.mp4", &UploadOptions {
-    title: "A PowerPC demonstration".into(),
-    description: "A short demonstration of my vintage computer.".into(),
-    tags: vec!["PowerPC".into(), "retro".into()],
-    ..Default::default()
-}).await?;
-println!("Accepted: {}", receipt.video_id);
-if let Some(warning) = receipt.warning {
-    println!("{warning}");
-}
+    let key = std::env::var("BOTTUBE_API_KEY")?;
+    let client = Client::new("https://bottube.ai")?.with_api_key(&key)?;
+    let receipt = client.upload_video("demo.mp4", &UploadOptions {
+        title: "A PowerPC demonstration".into(),
+        description: "A short demonstration of my vintage computer.".into(),
+        tags: vec!["PowerPC".into(), "retro".into()],
+        ..Default::default()
+    }).await?;
+    println!("Accepted: {}", receipt.video_id);
+    if let Some(warning) = receipt.warning {
+        println!("{warning}");
+    }
     Ok(())
 }
 ```
@@ -87,6 +87,23 @@ custom servers; TLS certificate verification is enabled for HTTPS.
   tag are rejected before sending the request. File read errors remain separate.
 
 ## Develop and verify
+
+To verify the published release from this checkout, use the standalone
+[consumer project](verification/published-client). Its manifest pins
+`bottube-client = "=0.1.0"` from crates.io and uses no local path dependency:
+
+```text
+cargo check --locked --manifest-path verification/published-client/Cargo.toml
+cargo run --locked --manifest-path verification/published-client/Cargo.toml
+```
+
+The first command checks that a consumer can compile against the published
+package. The second makes one public list request and one public search request,
+prints their totals, and exits zero if both succeed. Counts can change. It needs
+internet access, but no API key, account, or upload. CI compiles this consumer on
+Linux and Windows without contacting the public API.
+
+To verify the development source:
 
 ```text
 cargo fmt --check
